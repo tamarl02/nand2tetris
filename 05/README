@@ -1,0 +1,25 @@
+tamarl02, nitzanwerber
+
+===============================================================================
+Tamar Levy, ID 200485878, tamarl02@cs.huji.ac.il
+Nitzan Werber, ID 301228441, nitzan.werber@cs.huji.ac.il
+===============================================================================
+
+                       Project 5 - Computer Architecture
+                       ----------------------------------
+
+Submitted Files
+---------------
+README - This file.
+Computer.hdl - Implementation of The platform's top-most chip 
+CPU.hdl - Implementation of The Hack CPU - central processing unit
+Memory.hdl - Implementation of the Entire RAM address space 
+ExtendAlu.hdl - Implementation of the an extended ALU
+CpuMul.hdl - Implementation of an extended CPU that uses the ExtendAlu
+Mul.hdl - a fixed implementation of the multiply of a[16], b[16] from project2
+ShiftLeft.hdl - Implementation of ShiftLeft from project 2
+ShiftRight.hdl - Implementation of ShiftRight from project 2
+
+Remarks
+-------
+* no remarks *

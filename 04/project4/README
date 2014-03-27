@@ -1,0 +1,20 @@
+tamarl02, nitzanwerber
+
+===============================================================================
+Tamar Levy, ID 200485878, tamarl02@cs.huji.ac.il
+Nitzan Werber, ID 301228441, nitzan.werber@cs.huji.ac.il
+===============================================================================
+
+                       Project 4 - Machine Level Programming
+                       --------------------------------------
+
+Submitted Files
+---------------
+README - This file.
+Sort.asm - Sorts an array on numbers in descending order
+Divide.asm - Given a number and a denominator, results their devision
+Mult.asm - Given 2 numbers, results in their multification 
+Fill.asm - If there's a key in the keybaord is pressed, the screen pixels begin to blacken 
+Remarks
+-------
+* no remarks *

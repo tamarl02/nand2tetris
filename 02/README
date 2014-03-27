@@ -1,0 +1,23 @@
+tamarl02, nitzanwerber
+===============================================================================
+Tamae Levy, ID 200485878, tamarl02@cs.huji.ac.il
+Nitzan Werber, ID 301228441, nitzan.werber@cs.huji.ac.il
+===============================================================================
+
+                       Project 2 - Combinational Chips
+                       -------------------------------
+
+Submitted Files
+---------------
+README - This file.
+HalfAdder.hdl - Computes the sum of two bits.
+FullAdder.hdl - Computes the sum of three bits (sum + carry).
+Add16.hdl - Adds two 16-bit values, the most significant carry bit is ignored.
+Inc16.hdl - 16-bit incrementer, returns in + 1.
+ALU.hdl - According to 6 input, computes one of the following functions on two 16-bit inputs:  
+		  x+y, x-y, y-x, 0, 1, -1, x, y, -x, -y, !x, !y, x+1, y+1, x-1, y-1, x&y, x|y 
+ Mul.hdl - Computes a * b.
+
+Remarks
+-------
+* no remarks *h

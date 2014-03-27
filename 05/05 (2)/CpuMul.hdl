@@ -1,0 +1,54 @@
+/**
+* This chip is an extension of the book CPU by using the extended ALU.
+* More specificly if instruction[15]==0 or (instruction[14] and instruction[13] equals 1)
+* the CpuMul behave exactly as the book CPU.
+* While if it is C instruction and instruction[13] == 0 the output will be D*A/M
+* (according to instruction[12]).
+* Moreover, if it is c instruction and instruction[14] == 0 it will behave as follows:
+*
+* instruction:  | 12 | 11 | 10 |
+* _____________________________
+* shift left D  | 0  | 1  | 1  |
+* shift left A  | 0  | 1  | 0  |
+* shift left M  | 1  | 1  | 0  |
+* shift right D | 0  | 0  | 1  |
+* shift right A | 0  | 0  | 0  |
+* shift right M | 1  | 0  | 0  |
+
+CHIP CpuMul{
+
+    IN  inM[16],         // M value input  (M = contents of RAM[A])
+        instruction[16], // Instruction for execution
+        reset;           // Signals whether to re-start the current
+                         // program (reset=1) or continue executing
+                         // the current program (reset=0).
+
+    OUT outM[16],        // M value output
+        writeM,          // Write into M? 
+        addressM[15],    // Address in data memory (of M)
+        pc[15];          // address of next instruction
+
+     PARTS:
+
+     // if instruction[15]==0 or (instruction[14] and instruction[13] equals 1)
+     // the CpuMul behave exactly as the book CPU.
+     And(a=instruction[13], b=instruction[14], out=outAnd);
+     Not(in=instruction[15], out=outNot);
+     Or(a=outAnd, b=outNot, out=isReg);
+
+     // if it is C instruction (instruction[15] == 1) and instruction[13] == 0 the output will be D*A/M
+     ExtendAlu(x=dIn, y=aOrM, instruction[0..6]=instruction[4..13], instruction[7]=isReg, instruction[8]=isReg, 
+                out=aluOut, out=outAlu, zr=zr, ng=ng);
+
+     CPU(inM=currM, instruction=instruction, reset=reset, outM=outM, writeM=writeM, addressM=addressM, pc=pc);
+     
+     Mux16(a=outAlu, b=inM, sel=isReg, out=currM);
+
+     
+
+     // sends info if the PC should make a jump or keep incrementing
+//     And(a=instruction[2],b=instruction[15],out=j1);
+//    And(a=instruction[1],b=instruction[15],out=j2);
+//     And(a=instruction[0],b=instruction[15],out=j3);
+//     Jumper(j1=j1,j2=j2,j3=j3,zeroed=zr,negative=ng,out=jumperOut);      
+}

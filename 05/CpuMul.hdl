@@ -1,0 +1,72 @@
+/**
+* This chip is an extension of the book CPU by using the extended ALU.
+* More specificly if instruction[15]==0 or (instruction[14] and instruction[13] equals 1)
+* the CpuMul behave exactly as the book CPU.
+* While if it is C instruction and instruction[13] == 0 the output will be D*A/M 
+* (according to instruction[12]).
+* Moreover, if it is c instruction and instruction[14] == 0 it will behave as follows:
+*
+* instruction:  | 12 | 11 | 10 |
+* _____________________________
+* shift left D  | 0  | 1  | 1  |
+* shift left A  | 0  | 1  | 0  |
+* shift left M  | 1  | 1  | 0  |
+* shift right D | 0  | 0  | 1  |
+* shift right A | 0  | 0  | 0  |
+* shift right M | 1  | 0  | 0  |
+**/
+
+CHIP CpuMul{
+
+    IN  inM[16],         // M value input  (M = contents of RAM[A])
+        instruction[16], // Instruction for execution
+        reset;           // Signals whether to re-start the current
+                         // program (reset=1) or continue executing
+                         // the current program (reset=0).
+
+    OUT outM[16],        // M value output
+        writeM,          // Write into M? 
+        addressM[15],    // Address in data memory (of M)
+        pc[15];          // address of next instruction
+
+     PARTS:
+
+    Not(in=instruction[15],out=notInstruction);
+    Mux16(a=instruction,b=outputOfALU,sel=instruction[15],out=Ainput);              // if instruction[15] = 0: its an address, else it's an instruction
+    Mux(a=true,b=instruction[5],sel=instruction[15],out=ALoadBit);              // if instruction[15] = 0 or d1=1 : set the A-loadBit to 1, else A-loadBit=0
+    ARegister(in=Ainput,load=ALoadBit,out=outputOfA,out[0..14]=addressM);    // if ALoadBit=1: set A-Register to (address or outputOfALU)
+
+    And(a=instruction[15],b=instruction[3],out=writeM);                         //if instruction[15] = 1 and d3=1, set writeM to 1
+
+    // ExtendAlu
+    And(a=instruction[14],b=instruction[13],out=cpu1);
+    Or(a=cpu1,b=notInstruction,out=in8);
+    Mux(a=true,b=instruction[13],sel=instruction[15],out=in7);
+    Mux16(a=outputOfA,b=inM,sel=instruction[12],out=dataToALU);
+    ExtendAlu(x=outputToD,y=dataToALU,instruction[8]=in8,instruction[7]=in7,
+              instruction[6]=false,instruction[0..5]=instruction[6..11],out=outputOfALU,out=outM,zr=zr,ng=ng);
+
+
+        
+    And(a=instruction[15],b=instruction[4],out=DLoadBit);                       //if instruction[15] = 1 and d2=1: set DLoadBit=1
+    DRegister(in=outputOfALU,load=DLoadBit,out=outputToD);                        //if DLoadBit=1: load the ALU output to the D-register
+
+    
+    
+
+    And(a=instruction[0],b=instruction[15],out=j3);                             // if instruction[15] = 1 and instruction[0]: j3=1 
+    And(a=instruction[1],b=instruction[15],out=j2);                             // if instruction[15] = 1 and instruction[1]: j2=1 
+    And(a=instruction[2],b=instruction[15],out=j1);                             // if instruction[15] = 1 and instruction[2]: j1=1 
+    
+    // determines if PC makes a goto jump or keep increment
+    And(a=j1,b=ng,out=negJump);
+    And(a=j2,b=zr,out=zeroJump);
+    Or(a=zr,b=ng,out=nonNeg);
+    Not(in=nonNeg,out=nonNegJump);
+    Or(a=negJump,b=zeroJump,out=negZeroJump);
+    And(a=nonNegJump,b=j3,out=posJump);
+    Or(a=negZeroJump,b=posJump,out=outJumper);
+
+    PC(in=outputOfA,load=outJumper,inc=true,reset=reset,out[0..14]=pc);
+
+}

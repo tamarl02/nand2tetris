@@ -1,0 +1,10 @@
+// File name: projects/02/ShiftLeft.hdl
+
+// Shifts 'in' one bite to the right and return the result.
+CHIP ShiftLeft{
+     IN in[16];
+     OUT out[16];
+     
+     PARTS:
+          Add16(a=in, b=in, out=out);
+}

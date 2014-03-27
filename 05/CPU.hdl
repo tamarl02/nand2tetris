@@ -1,0 +1,70 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/05/CPU.hdl
+
+/**
+ * The Central Processing unit (CPU).
+ * Consists of an ALU and a set of registers, designed to fetch and 
+ * execute instructions written in the Hack machine language.
+ * In particular, functions as follows:
+ * Executes the inputted instruction according to the Hack machine 
+ * language specification. The D and A in the language specification
+ * refer to CPU-resident registers, while M refers to the external
+ * memory location addressed by A, i.e. to Memory[A]. The inM input 
+ * holds the value of this location. If the current instruction needs 
+ * to write a value to M, the value is placed in outM, the address 
+ * of the target location is placed in the addressM output, and the 
+ * writeM control bit is asserted. (When writeM=0, any value may 
+ * appear in outM). The outM and writeM outputs are combinational: 
+ * they are affected instantaneously by the execution of the current 
+ * instruction. The addressM and pc outputs are clocked: although they 
+ * are affected by the execution of the current instruction, they commit 
+ * to their new values only in the next time unit. If reset=1 then the 
+ * CPU jumps to address 0 (i.e. sets pc=0 in next time unit) rather 
+ * than to the address resulting from executing the current instruction. 
+ */
+
+CHIP CPU {
+
+    IN  inM[16],         // M value input  (M = contents of RAM[A])
+        instruction[16], // Instruction for execution
+        reset;           // Signals whether to re-start the current
+                         // program (reset=1) or continue executing
+                         // the current program (reset=0).
+
+    OUT outM[16],        // M value output
+        writeM,          // Write into M? 
+        addressM[15],    // Address in data memory (of M)
+        pc[15];          // address of next instruction
+
+    PARTS:
+    Mux16(a=instruction,b=outALU,sel=instruction[15],out=Ainput);				// if instruction[15] = 0: its an address, else it's an instruction
+    Mux(a=true,b=instruction[5],sel=instruction[15],out=ALoadBit);  			// if instruction[15] = 0 or d1=1 : set the A-loadBit to 1, else A-loadBit=0
+    ARegister(in=Ainput,load=ALoadBit,out=ARegisterOut,out[0..14]=addressM);	// if ALoadBit=1: set A-Register to (address or outALU)
+    
+	Mux16(a=ARegisterOut,b=inM,sel=instruction[12],out=AorM);	 				//if the a-bit=0: load ALU with A data to the ALU, else load ALU with M data
+    ALU(x=DRegisterOut,y=AorM,zx=instruction[11],nx=instruction[10],zy=instruction[9],ny=instruction[8],f=instruction[7],no=instruction[6],out=outALU,out=outM,zr=zeroed,ng=negative);
+		
+	And(a=instruction[15],b=instruction[4],out=DLoadBit);						//if instruction[15] = 1 and d2=1: set DLoadBit=1
+	DRegister(in=outALU,load=DLoadBit,out=DRegisterOut);						//if DLoadBit=1: load the ALU output to the D-register
+
+    And(a=instruction[15],b=instruction[3],out=writeM);							//if if instruction[15] = 1 and d3=1, set writeM to 1
+    
+    And(a=instruction[0],b=instruction[15],out=j3);                             // if instruction[15] = 1 and instruction[0]: j3=1 
+    And(a=instruction[1],b=instruction[15],out=j2);			        		    // if instruction[15] = 1 and instruction[1]: j2=1 
+    And(a=instruction[2],b=instruction[15],out=j1);                             // if instruction[15] = 1 and instruction[2]: j1=1 
+    
+	// determines if PC makes a goto jump or keep increment
+	And(a=j1,b=negative,out=negJump);
+    And(a=j2,b=zeroed,out=zeroJump);
+    Or(a=zeroed,b=negative,out=nonNeg);
+    Not(in=nonNeg,out=nonNegJump);
+    Or(a=negJump,b=zeroJump,out=negZeroJump);
+    And(a=nonNegJump,b=j3,out=posJump);
+    Or(a=negZeroJump,b=posJump,out=outJumper);
+	
+    PC(in=ARegisterOut,load=outJumper,inc=true,reset=reset,out[0..14]=pc);
+    
+    
+}

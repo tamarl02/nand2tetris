@@ -1,0 +1,75 @@
+
+// File name: projects/02/Mul.hdl
+
+// Computes a * b and return the result.
+CHIP Mul{
+    IN a[16], b[16];
+    OUT out[16];
+
+    PARTS:
+
+    	// Multiplication vertically
+    	// multiplies each index of b (let's call it x) in the number a, 
+    	// that has been shifted to the left x times.
+	    Mux16(a[0..14]=false, b=a, sel=b[0], out=w0);
+	    ShiftLeft(in=a, out=shiftA1);
+	    Mux16(a[0..14]=false, b=shiftA1, sel=b[1], out=w1);
+	    ShiftLeft(in=shiftA1, out=shiftA2);
+	    Mux16(a[0..14]=false, b=shiftA2, sel=b[2], out=w2);
+	    ShiftLeft(in=shiftA2, out=shiftA3);
+	    Mux16(a[0..14]=false, b=shiftA3, sel=b[3], out=w3);
+	    ShiftLeft(in=shiftA3, out=shiftA4);
+	    Mux16(a[0..14]=false, b=shiftA4, sel=b[4], out=w4);
+	    ShiftLeft(in=shiftA4, out=shiftA5);
+	    Mux16(a[0..14]=false, b=shiftA5, sel=b[5], out=w5);
+	    ShiftLeft(in=shiftA5, out=shiftA6);
+	    Mux16(a[0..14]=false, b=shiftA6, sel=b[6], out=w6);
+	    ShiftLeft(in=shiftA6, out=shiftA7);
+	    Mux16(a[0..14]=false, b=shiftA7, sel=b[7], out=w7);
+	    ShiftLeft(in=shiftA7, out=shiftA8);
+	    Mux16(a[0..14]=false, b=shiftA8, sel=b[8], out=w8);
+	    ShiftLeft(in=shiftA8, out=shiftA9);
+	    Mux16(a[0..14]=false, b=shiftA9, sel=b[9], out=w9);
+	    ShiftLeft(in=shiftA9, out=shiftA10);
+	    Mux16(a[0..14]=false, b=shiftA10, sel=b[10], out=w10);
+	    ShiftLeft(in=shiftA10, out=shiftA11);
+	    Mux16(a[0..14]=false, b=shiftA11, sel=b[11], out=w11);
+	    ShiftLeft(in=shiftA11, out=shiftA12);
+	    Mux16(a[0..14]=false, b=shiftA12, sel=b[12], out=w12);
+	    ShiftLeft(in=shiftA12, out=shiftA13);
+	    Mux16(a[0..14]=false, b=shiftA13, sel=b[13], out=w13);
+	    ShiftLeft(in=shiftA13, out=shiftA14);
+	    Mux16(a[0..14]=false, b=shiftA14, sel=b[14], out=w14);
+	    ShiftLeft(in=shiftA14, out=shiftA15);
+	    Mux16(a[0..14]=false, b=shiftA15, sel=b[15], out=w15);
+
+	    // Adds all the results of multiplying each index of 'b' in a shifted 'a'. 
+	    Add16(a=w0, b=w1, out=add0);
+	    Add16(a=add0, b=w2, out=add1);
+	    Add16(a=add1, b=w3, out=add2);
+	    Add16(a=add2, b=w4, out=add3);
+	    Add16(a=add3, b=w5, out=add4);
+	    Add16(a=add4, b=w6, out=add5);
+	    Add16(a=add5, b=w7, out=add6);
+   		Add16(a=add6, b=w8, out=add7);
+	    Add16(a=add7, b=w9, out=add8);
+	    Add16(a=add8, b=w10, out=add9);
+	    Add16(a=add9, b=w11, out=add10);
+	    Add16(a=add10, b=w12, out=add11);
+	    Add16(a=add11, b=w13, out=add12);
+	    Add16(a=add12, b=w14, out=add13);
+	    Add16(a=add13, b=w15, out=out);
+
+
+	    //Add16(a=add13, b=w15, out[0..7]=orA, out[8..15]=orB, out=out);
+
+	    // Determine negativity
+	   // Xor(a=a[15], b=b[15], out=neg);
+	   // Or8Way(in=orA, out=isnotzero1);
+	   // Or8Way(in=orB, in[7]=false, out=isnotzero2);
+	   // Or(a=isnotzero1, b=isnotzero2, out=isNotZero);
+	   // Mux(a=false, b=neg, sel=isNotZero ,out=isNeg);
+
+	    // calculate final result
+	    //Mux16(a=false, b=out1, b[15]=isNeg, sel=true, out=out);
+}

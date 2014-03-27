@@ -1,0 +1,85 @@
+/**
+* This chip is an extension of the book CPU by using the extended ALU.
+* More specificly if instruction[15]==0 or (instruction[14] and instruction[13] equals 1)
+* the CpuMul behave exactly as the book CPU.
+* While if it is C instruction and instruction[13] == 0 the output will be D*A/M 
+* (according to instruction[12]).
+* Moreover, if it is c instruction and instruction[14] == 0 it will behave as follows:
+*
+* instruction:  | 12 | 11 | 10 |
+* _____________________________
+* shift left D  | 0  | 1  | 1  |
+* shift left A  | 0  | 1  | 0  |
+* shift left M  | 1  | 1  | 0  |
+* shift right D | 0  | 0  | 1  |
+* shift right A | 0  | 0  | 0  |
+* shift right M | 1  | 0  | 0  |
+**/
+
+CHIP CpuMul{
+
+    IN  inM[16],         // M value input  (M = contents of RAM[A])
+        instruction[16], // Instruction for execution
+        reset;           // Signals whether to re-start the current
+                         // program (reset=1) or continue executing
+                         // the current program (reset=0).
+
+    OUT outM[16],        // M value output
+        writeM,          // Write into M? 
+        addressM[15],    // Address in data memory (of M)
+        pc[15];          // address of next instruction
+
+    PARTS:
+	// A-Register
+	Not(in=instruction[15],out=notInstruction);
+	And(a=instruction[15],b=instruction[5],out=ARegInstructLoad);	
+	Or(a=ARegInstructLoad,b=notInstruction,out=ARegLoad);
+	Mux16(a=instruction,b=outputOfALU,sel=instruction[15],out=inputToA);
+	ARegister(in=inputToA,load=ARegLoad,out[0..14]=addressM,out=outputOfA);
+
+	// writeM
+	And(a=instruction[15],b=instruction[3],out=writeM);
+	
+	// ExtendAlu
+	And(a=instruction[14],b=instruction[13],out=cpu1);
+	Or(a=cpu1,b=notInstruction,out=in8);
+	Mux(a=true,b=instruction[13],sel=instruction[15],out=in7);
+	Mux16(a=outputOfA,b=inM,sel=instruction[12],out=dataToALU);
+	ExtendAlu(x=outputToD,y=dataToALU,instruction[8]=in8,instruction[7]=in7,
+			  instruction[6]=false,instruction[0..5]=instruction[6..11],out=outputOfALU,out=outM,zr=zr,ng=ng);
+	
+	// D-Register
+	And(a=instruction[15],b=instruction[4],out=DRegLoad);
+	DRegister(in=outputOfALU,load=DRegLoad,out=outputToD);
+	
+	// Use ALU output to compute PC.
+	// For that, we need appropriate "load" and "inc" variables.
+
+	// First initialize some negations.
+	Not(in=instruction[2],out=notJ1);
+	Not(in=instruction[1],out=notJ2);
+	Not(in=instruction[0],out=notJ3);
+	Not(in=ng,out=notNg);
+	Not(in=zr,out=notZr);
+	
+	// For load: 
+	// Create 3 basic "jumps", use with instruction's MSB to calculate "load".
+	And(a=ng,b=instruction[2],out=JLT);		//JLT
+	And(a=zr,b=instruction[1],out=JEQ);		//JEQ
+	And(a=notNg,b=notZr,out=GTzr);
+	And(a=GTzr,b=instruction[0],out=JGT);	//JGT
+	Or(a=JLT,b=JGT,out=JNE);
+	Or(a=JNE,b=JEQ,out=JMP);
+	And(a=instruction[15],b=JMP,out=load);
+	
+	// For inc: 
+	// Increment if given an A-instruction, or if no JMP specified.
+	Not(in=JMP,out=notJMP);
+	And(a=notJ1,b=notJ2,out=notJ1J2);
+	And(a=notJ1J2,b=notJ3,out=notJ);
+	Or(a=notJ,b=notJMP,out=CInstructInc);
+	Or(a=CInstructInc,b=notInstruction,out=inc);
+	
+	// Now we can use PC chip and finish.
+	PC(in=outputOfA,reset=reset,load=load,inc=inc,out[0..14]=pc);
+}
