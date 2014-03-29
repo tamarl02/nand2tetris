@@ -8,7 +8,9 @@ public class VMTranslator {
 	private static final int IS_FILE = 0;
 	private static final int IS_DIR = 1;
 	private static final String USAGE_ISSUE_1 = "Input a .asm file, or a directory";
-	private static final String USAGE_ISSUE_2 = "Input a .asm file, or a directory";
+	private static final String USAGE_ISSUE_2 = "Illegal number of arguments.";
+	private static final String WRONG_PARSE = "Wrong parsing";
+
 
 	private static final int BAD_INPUT = -1;
 	private static final String VM_FILE = "(\\w*).vm$";
@@ -90,6 +92,9 @@ public class VMTranslator {
 //			case C_RETURN:
 //
 //				break;
+			default:
+				System.out.println(WRONG_PARSE);
+				break;
 
 			}
 		}
