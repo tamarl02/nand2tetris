@@ -1,4 +1,7 @@
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -11,7 +14,6 @@ public class VMTranslator {
 	private static final String USAGE_ISSUE_2 = "Illegal number of arguments.";
 	private static final String WRONG_PARSE = "Wrong parsing";
 
-
 	private static final int BAD_INPUT = -1;
 	private static final String VM_FILE = "(\\w*).vm$";
 	private static final String ASM_EX = "asm";
@@ -20,7 +22,7 @@ public class VMTranslator {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		if(args.length != 1) {
+		if (args.length != 1) {
 			System.out.println(USAGE_ISSUE_2);
 			System.exit(1);
 		}
@@ -32,6 +34,8 @@ public class VMTranslator {
 			System.exit(1);
 		}
 		String asmFileName = getAsmFileName(inputFileName);
+		
+
 		CodeWriter codeWriter = new CodeWriter();
 		// if the asm file name generated is ok, set it to the codeWriter
 		if (asmFileName != null) {
@@ -62,44 +66,49 @@ public class VMTranslator {
 		while (parser.hasMoreCommands()) {
 			parser.advance();
 			Parser.Command commType = parser.commandType();
+			
 			switch (commType) {
 			case C_ARITHMETIC:
+
+
 				codeWriter.writeArithmetic(parser.arg1());
 				break;
 			case C_POP:
+
 				codeWriter.writePushPop(commType, parser.arg1(), parser.arg2());
 				break;
 			case C_PUSH:
+
+
 				codeWriter.writePushPop(commType, parser.arg1(), parser.arg2());
 
 				break;
-				// future project
-//			case C_CALL:
-//
-//				break;
-//			case C_FUNCTION:
-//
-//				break;
-//			case C_GOTO:
-//
-//				break;
-//			case C_IF:
-//
-//				break;
-//			case C_LABEL:
-//
-//				break;
-//			case C_RETURN:
-//
-//				break;
+			// future project
+			// case C_CALL:
+			//
+			// break;
+			// case C_FUNCTION:
+			//
+			// break;
+			// case C_GOTO:
+			//
+			// break;
+			// case C_IF:
+			//
+			// break;
+			// case C_LABEL:
+			//
+			// break;
+			// case C_RETURN:
+			//
+			// break;
 			default:
 				System.out.println(WRONG_PARSE);
 				break;
 
 			}
 		}
-		
-
+	
 	}
 
 	private static ArrayList<String> getFilesNames(String string) {

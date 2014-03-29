@@ -97,7 +97,7 @@ public class Parser {
 		if (spiltLine.length > 2) {
 			_arg2 = Integer.parseInt(spiltLine[2]);
 		}
-		String command = _arg1 = spiltLine[0];
+		String command = spiltLine[0];
 		if (command.equals(CALL)) {
 			return Command.C_CALL;
 		}
