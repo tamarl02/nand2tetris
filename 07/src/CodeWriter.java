@@ -42,6 +42,8 @@ public class CodeWriter {
 	 */
 	public void close(){
 		
+		//check if the stream isn't null and close it
+		
 	}
 	
 

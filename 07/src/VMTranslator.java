@@ -3,41 +3,50 @@ import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
 public class VMTranslator {
 
 	private static final int IS_FILE = 0;
 	private static final int IS_DIR = 1;
-	private static final String USAGE_ISSUE = "Input a .asm file, or a directory";
+	private static final String USAGE_ISSUE_1 = "Input a .asm file, or a directory";
+	private static final String USAGE_ISSUE_2 = "Input a .asm file, or a directory";
+
 	private static final int BAD_INPUT = -1;
 	private static final String VM_FILE = "(\\w*).vm$";
 	private static final String ASM_EX = "asm";
-
 
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		if(args.length != 1) {
+			System.out.println(USAGE_ISSUE_2);
+			System.exit(1);
+		}
 		String inputFileName = args[0].trim();
+		// get the type of the input argument
 		int res = IsVMFileOrDir(inputFileName);
+		if (res == BAD_INPUT) {
+			System.out.println(USAGE_ISSUE_1);
+			System.exit(1);
+		}
 		String asmFileName = getAsmFileName(inputFileName);
 		CodeWriter codeWriter = new CodeWriter();
-		codeWriter.setFileName(asmFileName);
-		
-		if (res == IS_FILE) {
-			translate(inputFileName, codeWriter);
+		// if the asm file name generated is ok, set it to the codeWriter
+		if (asmFileName != null) {
+			codeWriter.setFileName(asmFileName);
 
-		} else if (res == IS_DIR) {
-			ArrayList<String> filesInDir = getFilesNames(inputFileName);
-			for (int i = 0; i < filesInDir.size(); i++) {
-				translate(filesInDir.get(i), codeWriter);
+			if (res == IS_FILE) {
+				translate(inputFileName, codeWriter);
+
+			} else if (res == IS_DIR) {
+				ArrayList<String> filesInDir = getFilesNames(inputFileName);
+				for (int i = 0; i < filesInDir.size(); i++) {
+					translate(filesInDir.get(i), codeWriter);
+				}
 			}
-		} else {
-			System.out.println(USAGE_ISSUE);
-			return;
-		}
-		codeWriter.close();
 
+			codeWriter.close();
+		}
 	}
 
 	private static String getAsmFileName(String fileName) {
@@ -46,9 +55,46 @@ public class VMTranslator {
 	}
 
 	private static void translate(String inputFileName, CodeWriter codeWriter) {
-		Parser parse = new Parser(inputFileName);
+		Parser parser = new Parser(inputFileName);
+
+		while (parser.hasMoreCommands()) {
+			parser.advance();
+			Parser.Command commType = parser.commandType();
+			switch (commType) {
+			case C_ARITHMETIC:
+				codeWriter.writeArithmetic(parser.arg1());
+				break;
+			case C_POP:
+				codeWriter.writePushPop(commType, parser.arg1(), parser.arg2());
+				break;
+			case C_PUSH:
+				codeWriter.writePushPop(commType, parser.arg1(), parser.arg2());
+
+				break;
+				// future project
+//			case C_CALL:
+//
+//				break;
+//			case C_FUNCTION:
+//
+//				break;
+//			case C_GOTO:
+//
+//				break;
+//			case C_IF:
+//
+//				break;
+//			case C_LABEL:
+//
+//				break;
+//			case C_RETURN:
+//
+//				break;
+
+			}
+		}
 		
-		
+
 	}
 
 	private static ArrayList<String> getFilesNames(String string) {
