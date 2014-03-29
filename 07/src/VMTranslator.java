@@ -10,29 +10,44 @@ public class VMTranslator {
 	private static final int IS_DIR = 1;
 	private static final String USAGE_ISSUE = "Input a .asm file, or a directory";
 	private static final int BAD_INPUT = -1;
-	private static final String VM_FILE = "(\\w*).vm$";;
+	private static final String VM_FILE = "(\\w*).vm$";
+	private static final String ASM_EX = "asm";
+
 
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		int res = IsVMFileOrDir(args[0].trim());
+		String inputFileName = args[0].trim();
+		int res = IsVMFileOrDir(inputFileName);
+		String asmFileName = getAsmFileName(inputFileName);
+		CodeWriter codeWriter = new CodeWriter();
+		codeWriter.setFileName(asmFileName);
+		
 		if (res == IS_FILE) {
-			translate(args[0]);
+			translate(inputFileName, codeWriter);
 
 		} else if (res == IS_DIR) {
-			ArrayList<String> filesInDir = getFilesNames(args[0]);
+			ArrayList<String> filesInDir = getFilesNames(inputFileName);
 			for (int i = 0; i < filesInDir.size(); i++) {
-				translate(filesInDir.get(i));
+				translate(filesInDir.get(i), codeWriter);
 			}
 		} else {
 			System.out.println(USAGE_ISSUE);
+			return;
 		}
+		codeWriter.close();
 
 	}
 
-	private static void translate(String string) {
-		// TODO Auto-generated method stub
+	private static String getAsmFileName(String fileName) {
+		String tmpArr = fileName.substring(0, fileName.length() - 2);
+		return tmpArr + ASM_EX;
+	}
+
+	private static void translate(String inputFileName, CodeWriter codeWriter) {
+		Parser parse = new Parser(inputFileName);
+		
 		
 	}
 
